@@ -1,0 +1,17 @@
+---
+user: http
+group: http
+#port: 3000
+pid: .run/thin.pid
+chdir: /srv/http/tarok/
+tag: tarok
+timeout: 600
+wait: 30
+log: .run/thin.log
+max_conns: 1024
+environment: production
+max_persistent_conns: 512
+servers: 1
+threaded: false
+daemonize: true
+socket: .run/thin.sock

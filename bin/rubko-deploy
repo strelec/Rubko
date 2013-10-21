@@ -1,0 +1,40 @@
+#!/usr/bin/ruby
+
+	# settings
+
+	ssh = true
+	host = 'hetzner:54321'
+	user = 'root'
+	remote = '/srv/http/' + File.basename(Dir.getwd)
+
+	exclude = [
+		'log.txt',
+		#'config/db.rb',
+		'.deploy.rb',
+		'.dev/',
+		'.run/',
+		'.repo/',
+		'.gitignore',
+		'.git/'
+	]
+
+	# program
+
+	require 'io/console'
+	print 'Password: ';
+	pass = STDIN.noecho(&:gets).strip
+	puts
+
+	protocol = ssh ? 'sftp' : 'ftp'
+
+	commands = [
+		'set ftp:list-options -a',
+		"open #{protocol}://#{user}:#{pass}@#{host}",
+		'lcd ./',
+		"cd #{remote}",
+		'mirror -L --reverse --only-newer --verbose ' + exclude.map { |el|
+			'--exclude-glob ' + el
+		}.join(' ')
+	]
+
+	system 'lftp', '-c', commands.join(';')
