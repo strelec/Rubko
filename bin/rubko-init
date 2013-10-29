@@ -1,0 +1,6 @@
+#!/usr/bin/ruby
+
+	require 'fileutils'
+
+	stamp = File.expand_path '../stamp', __dir__
+	FileUtils.cp_r Dir["#{stamp}/*"], '.'

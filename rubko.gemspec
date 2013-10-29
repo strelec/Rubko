@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
 	files = `git ls-files`
 	files = `find ./*` if files.empty?
 	gem.files       = files.split "\n"
-	gem.executables << 'rubko-deploy'
+	gem.executables = ['rubko-deploy', 'rubko-init']
 
 	gem.add_dependency 'json'
 end
