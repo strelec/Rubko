@@ -13,7 +13,7 @@ Gem::Specification.new do |gem|
 	gem.email       = 'ruby@rok-kralj.net'
 	gem.homepage    = 'https://github.com/strelec/Rubko'
 
-	files = `git ls-files -z`
+	files = `git ls-files`
 	files = `find ./*` if files.empty?
 	gem.files       = files.split "\n"
 	gem.executables << 'rubko-deploy'
