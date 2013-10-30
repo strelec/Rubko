@@ -58,9 +58,8 @@ class Rubko
 			}
 			return false unless name
 
-			load(:plugin, name, *args).tap { |plugin|
-				loadFile "./config/#{name * '/'}.rb"
-			}
+			loadFile "./config/#{name * '/'}.rb"
+			load :plugin, name, *args
 		end
 
 		def loadController(name, *args)
