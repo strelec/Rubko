@@ -77,7 +77,8 @@ class SessionPlugin < Rubko::Plugin
 	def self.delegate(*funcs)
 		funcs.each { |func|
 			define_method(func) { |*args|
-				storage.send func, name, id, *args
+				sid = id
+				storage.send func, name, sid, *args
 			}
 		}
 	end
