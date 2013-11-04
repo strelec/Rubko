@@ -330,7 +330,7 @@ class DbPlugin < Rubko::Plugin
 				yield
 			raw 'COMMIT' if inTransaction
 		rescue => e
-			puts e
+			p e
 			puts e.backtrace
 			rollback
 			puts 'Transaction rolled back.'
