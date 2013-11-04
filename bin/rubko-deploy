@@ -1,40 +1,50 @@
 #!/usr/bin/ruby
 
-	# settings
+require 'rubko'
 
-	ssh = true
-	host = 'hetzner:54321'
-	user = 'root'
-	remote = '/srv/http/' + File.basename(Dir.getwd)
+class Rubko::Deploy
+	def initialize
+		@protocol = :sftp # :ftp
+		@remote = "/srv/http/#{File.basename Dir.getwd}"
 
-	exclude = [
-		'log.txt',
-		#'config/db.rb',
-		'.deploy.rb',
-		'.dev/',
-		'.run/',
-		'.repo/',
-		'.gitignore',
-		'.git/'
-	]
+		@exclude = [
+			'.dev/',
+			'.run/',
+			'.repo/',
+			'.gitignore',
+			'.git/'
+		]
+	end
 
-	# program
+	attr_reader :protocol, :remote, :user, :host, :exclude
 
-	require 'io/console'
-	print 'Password: ';
-	pass = STDIN.noecho(&:gets).strip
-	puts
+	def password
+		return @password if @password
 
-	protocol = ssh ? 'sftp' : 'ftp'
+		require 'io/console'
+		print 'Password: ';
+		STDIN.noecho(&:gets).strip.tap {
+			puts
+		}
+	end
 
-	commands = [
-		'set ftp:list-options -a',
-		"open #{protocol}://#{user}:#{pass}@#{host}",
-		'lcd ./',
-		"cd #{remote}",
-		'mirror -L --reverse --only-newer --verbose ' + exclude.map { |el|
-			'--exclude-glob ' + el
-		}.join(' ')
-	]
+	def deploy!
+		config
 
-	system 'lftp', '-c', commands.join(';')
+		commands = [
+			'set ftp:list-options -a',
+			"open #{protocol}://#{user}:#{password}@#{host}",
+			'lcd ./',
+			"cd #{remote}",
+			'mirror -L --reverse --only-newer --verbose ' + exclude.map { |el|
+				'--exclude-glob ' + el
+			} * ' '
+		]
+
+		system 'lftp', '-c', commands * ';'
+	end
+end
+
+require './config/deploy.rb'
+
+Rubko::Deploy.new.deploy!
