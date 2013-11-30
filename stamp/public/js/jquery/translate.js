@@ -43,7 +43,7 @@
 				if (translation) {
 					var temp=str.replace(value, translation);
 					if (value[0].toLowerCase()===value[0])
-						return temp[0].toLowerCase()+temp.slice(1)
+						return temp[0].toLowerCase()+temp.slice(1);
 					return temp[0].toUpperCase()+temp.slice(1);
 				}
 				$.each($.translate.dictionary[module][language].regex, function(key, val) {
@@ -74,13 +74,14 @@
 		language = language || $.translate.language;
 		$.translate.textNodes(this).each(function() {
 			$(this).untranslate(true);
-			if ($(this).data('translateO') || $.translate.clear($.translate.get(this))) {
-				if (!$(this).data('translateO'))
-					$(this).data('translateO', $.translate.get(this));
-				var translation = $(this).data('translateO');
-				if (language === $.translate.original || (translation = $.translate.lookup($(this).data('translateO'), module, language)) ) {
+			if (this.trO || $.translate.clear($.translate.get(this))) {
+				if (!this.trO)
+					this.trO = $.translate.get(this);
+				var translation = this.trO;
+				if (language === $.translate.original || (translation = $.translate.lookup(this.trO, module, language)) ) {
 					$.translate.set(this, translation);
-					$(this).data('translateM', module).data('translateL', language);
+					this.trM = module;
+					this.trL = language;
 				} else $(this).untranslate(true);
 			}
 		});
@@ -89,13 +90,14 @@
 
 	$.fn.retranslate = function(module_, language_) {
 		$.translate.textNodes(this).each(function() {
-			if ($(this).data('translateO')) {
-				var module = module_ || $(this).data('translateM');
-				var language = language_ || $(this).data('translateL');
-				var translation = $(this).data('translateO');
-				if (language === $.translate.original || (translation = $.translate.lookup($(this).data('translateO'), module, language)) ) {
+			if (this.trO) {
+				var module = module_ || this.trM;
+				var language = language_ || this.trL;
+				var translation = this.trO;
+				if (language === $.translate.original || (translation = $.translate.lookup(this.trO, module, language)) ) {
 					$.translate.set(this, translation);
-					$(this).data('translateM', module).data('translateL', language);
+					this.trM = module;
+					this.trL = language;
 				}
 			}
 		});
@@ -104,9 +106,11 @@
 
 	$.fn.untranslate = function(undo) {
 		$.translate.textNodes(this).each(function() {
-			if (undo && $(this).data('translateO'))
-				$.translate.set(this, $(this).data('translateO'));
-			$(this).removeData();
+			if (undo && this.trO)
+				$.translate.set(this, this.trO);
+			delete this.trM;
+			delete this.trL;
+			delete this.trO;
 		});
 	};
 //})();
