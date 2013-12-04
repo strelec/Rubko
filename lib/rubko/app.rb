@@ -52,6 +52,8 @@ class Rubko::App
 
 		# make sure body responds to :each
 		@body = @body.to_s if Integer === @body
+		@body = @body.to_json if Hash === @body
+
 		@body = [@body] if String === @body
 		@body = [] unless @body.respond_to? :each
 
