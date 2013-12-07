@@ -10,8 +10,8 @@ class UrlPlugin < Rubko::Plugin
 	end
 
 	def path=(path)
-		len = path.start_with?(@base) ? @base.length : 1
-		@path = URI.unescape(path)[len..-1].chomp(@ending).split '/', -1
+		len = path.start_with?(base) ? base.length : 1
+		@path = URI.unescape(path)[len..-1].chomp(ending).split '/', -1
 		@newPath = nil
 
 		@protocol = env['rack.url_scheme'] + '://'
@@ -22,7 +22,7 @@ class UrlPlugin < Rubko::Plugin
 
 	def newPath
 		unless @newPath
-			@newPath = @path * '/'
+			@newPath = path * '/'
 			config
 			@newPath = @newPath.split '/', -1
 		end
@@ -47,14 +47,14 @@ class UrlPlugin < Rubko::Plugin
 	def generate(*path)
 		path.compact!
 		path.map! { |seg|
-			seg = @path[seg] if seg.kind_of? Integer
+			seg = path[seg] if seg.kind_of? Integer
 			URI.escape seg
 		}
-		(@protocol+@host if @fullPath).to_s + @base + path.join('/')
+		(protocol+host if fullPath).to_s + base + path.join('/')
 	end
 
 	def link(*path)
-		generate(*path) + (@ending unless path.empty?).to_s
+		generate(*path) + (ending unless path.empty?).to_s
 	end
 
 	def linkSlug(*path)
@@ -64,7 +64,7 @@ class UrlPlugin < Rubko::Plugin
 	def file(*path)
 		name = 'public/' + path.join('/')
 		time = File.mtime(name).to_i / 3 % 1000000 if File.exists? name
-		generate @fileBase, (time.to_s if @fileTime), *path
+		generate fileBase, (time.to_s if fileTime), *path
 	end
 
 	def redirect(*path)
@@ -79,11 +79,11 @@ class UrlPlugin < Rubko::Plugin
 	end
 
 	def refresh
-		redirect(*@path)
+		redirect(*path)
 	end
 
 	def forceSSL
-		if @protocol != 'https://'
+		if protocol != 'https://'
 			@protocol, @fullPath = 'https://', true
 			refresh
 		end

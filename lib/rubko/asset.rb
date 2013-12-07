@@ -24,9 +24,9 @@ class Rubko::Asset < Rubko::Controller
 	private :hit, :cache, :miss
 
 	def compressible?
-		super && @mime != 'application/octet-stream' &&
+		super && mime != 'application/octet-stream' &&
 		['application', 'text'].any? { |type|
-			@mime.start_with? type+'/'
+			mime.start_with? type+'/'
 		}
 	end
 
@@ -43,10 +43,10 @@ class Rubko::Asset < Rubko::Controller
 		end
 
 		path.shift if path[0] =~ /^\d*$/
-		path = "#{@dir}/#{path * '/'}"
+		path = "#{dir}/#{path * '/'}"
 		@mime = Rack::Mime.mime_type File.extname(path)
 		if File.file? path
-			self.mime = @mime
+			self.mime = mime
 			headers['Cache-Control'] = 'public'
 			headers['Vary'] = 'Accept-Encoding'
 
@@ -55,7 +55,7 @@ class Rubko::Asset < Rubko::Controller
 			headers['Last-Modified'] = @modified.httpdate
 			headers['Expires'] = (DateTime.now >> 12).httpdate
 
-			if @modified.to_i <= since
+			if modified.to_i <= since
 				cache( *path )
 				self.status = 304
 				''

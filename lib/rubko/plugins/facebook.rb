@@ -31,7 +31,7 @@ class FacebookPlugin < Rubko::Plugin
 		})
 		@token = parse( httpGet url )['access_token']
 
-		jsonParse httpGet build 'https://graph.facebook.com/me', access_token: @token
+		jsonParse httpGet build 'https://graph.facebook.com/me', access_token: token
 	end
 
 private

@@ -5,7 +5,7 @@ class Rubko
 	module Base
 		def initialize(parent = nil)
 			@parent = parent
-			finalizers << self if @parent
+			finalizers << self if parent
 			@plugins = {}
 			puts "#{self.class} initialized." unless production?
 		end

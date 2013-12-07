@@ -14,7 +14,7 @@ class Rubko::App
 		@finalizers = []
 
 		@env = env
-		params = Rack::Utils.parse_nested_query @env['rack.input'].read
+		params = Rack::Utils.parse_nested_query env['rack.input'].read
 		@params = Hash[ params.map { |k, v|
 			[ k.to_sym, v ]
 		} ]
@@ -51,7 +51,7 @@ class Rubko::App
 		prepareBody!
 		prepareHeaders!
 
-		[@status, @headers, @body]
+		[status, headers, body]
 	end
 
 	def production?
@@ -62,19 +62,19 @@ private
 
 	def prepareBody!
 		# if object is a Hash, return JSON
-		if Hash === @body
+		if Hash === body
 			@mime = 'application/json'
 			@body = if production?
-				@body.to_json
+				body.to_json
 			else
-				JSON.pretty_generate @body, indent: "\t"
+				JSON.pretty_generate body, indent: "\t"
 			end
 		end
 
-		# make sure body responds to :each
-		@body = @body.to_s if Integer === @body
-		@body = [@body] if String === @body
-		@body = [] unless @body.respond_to? :each
+		# make sure body responds to #each
+		@body = body.to_s if Integer === body
+		@body = [body] if String === body
+		@body = [] unless body.respond_to? :each
 	end
 
 	def prepareHeaders!
@@ -92,7 +92,7 @@ private
 		# add Content-Length header
 		headers['Content-Length'] = if body.respond_to? :bytesize
 			body.bytesize
-		elsif Array === @body
+		elsif Array === body
 			body.reduce(0) { |sum, x|
 				sum + x.bytesize
 			}

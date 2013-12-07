@@ -24,7 +24,7 @@ class SessionPlugin < Rubko::Plugin
 
 			if @id
 				if time = storage[name, @id]
-					destroy if Time.now - time > @timeout
+					destroy if Time.now - time > timeout
 				end
 				storage[name, @id] = Time.new
 			end

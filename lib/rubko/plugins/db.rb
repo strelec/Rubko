@@ -14,9 +14,9 @@ class DbPlugin < Rubko::Plugin
 	def handle
 		unless @handle
 			config if @handle.nil?
-			if @pool
-				@sig = [@host, @port, @user, @password, @db]
-				@handle = ( @pool[:db, *@sig] ||= [] ).pop
+			if pool
+				@sig = [host, port, user, password, db]
+				@handle = ( pool[:db, *@sig] ||= [] ).pop
 			end
 			@handle = connect unless @handle
 		end
@@ -27,20 +27,20 @@ class DbPlugin < Rubko::Plugin
 	attr_reader :affectedRows
 
 	def connect
-		PG.connect host: @host, port: @post, user: @user, password: @password, dbname: @db
+		PG.connect host: host, port: port, user: user, password: password, dbname: db
 	end
 
 	def release
 		return true unless @handle
-		if @pool && handle.transaction_status == 0
-			@pool[:db, *@sig].push @handle
+		if pool && handle.transaction_status == 0
+			pool[:db, *@sig].push @handle
 			@handle = false
 			return true
 		end
 	end
 
 	def poolSize
-		@pool.keys(:db, *@sig).size
+		pool.keys(:db, *@sig).size
 	end
 
 	# PostgreSQL array OIDs and coresponding data type
