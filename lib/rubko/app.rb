@@ -31,42 +31,25 @@ class Rubko::App
 	end
 
 	def request(name = :welcome, action = nil, *path)
-		controller = loadController(name) || loadController(:error404)
+		@controller = loadController(name) || loadController(:error404)
 
 		calls = [ action ? "_#{action}" : 'index' ]
 		calls << calls.first + '_' + url.method
 
 		calls.map! { |call|
-			if controller.respond_to? call
-				@body = controller.__send__ call, *path
+			if @controller.respond_to? call
+				@body = @controller.__send__ call, *path
 				true
 			end
 		}
 		if calls.compact.empty?
-			@body = controller.other action, *path
+			@body = @controller.other action, *path
 		end
 
 		# finalize request
 		finalizers.reverse_each(&:finalize)
 		prepareBody!
-
-		# apply mime type
-		@headers['Content-Type'] = "#{mime}; charset=utf-8" unless @status == 304
-
-		# compress
-		if controller.compressible?
-			headers['Content-Encoding'] = 'gzip'
-			@body = Rubko::Asset::GzipStream.new @body
-		end
-
-		# add Content-Length header
-		if @body.respond_to? :bytesize
-			headers['Content-Length'] = @body.bytesize.to_s
-		elsif Array === @body
-			headers['Content-Length'] = @body.reduce(0) { |sum, x|
-				sum + x.bytesize
-			}.to_s
-		end
+		prepareHeaders!
 
 		[@status, @headers, @body]
 	end
@@ -92,5 +75,36 @@ private
 		@body = @body.to_s if Integer === @body
 		@body = [@body] if String === @body
 		@body = [] unless @body.respond_to? :each
+	end
+
+	def prepareHeaders!
+		# apply mime type header
+		unless status == 304
+			headers['Content-Type'] = "#{mime}; charset=utf-8"
+		end
+
+		# compress
+		if @controller.compressible?
+			headers['Content-Encoding'] = 'gzip'
+			@body = Rubko::Asset::GzipStream.new body
+		end
+
+		# add Content-Length header
+		headers['Content-Length'] = if body.respond_to? :bytesize
+			body.bytesize
+		elsif Array === @body
+			body.reduce(0) { |sum, x|
+				sum + x.bytesize
+			}
+		end
+
+		# rack requires strings as values
+		headers.each { |k, v|
+			if v.nil?
+				headers.delete k
+			elsif not String === v
+				headers[k] = v.to_s
+			end
+		}
 	end
 end
