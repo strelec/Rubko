@@ -48,14 +48,10 @@ class Rubko::App
 
 		# finalize request
 		finalizers.reverse_each(&:finalize)
+		prepareBody!
+
+		# apply mime type
 		@headers['Content-Type'] = "#{mime}; charset=utf-8" unless @status == 304
-
-		# make sure body responds to :each
-		@body = @body.to_s if Integer === @body
-		@body = @body.to_json if Hash === @body
-
-		@body = [@body] if String === @body
-		@body = [] unless @body.respond_to? :each
 
 		# compress
 		if controller.compressible?
@@ -77,5 +73,24 @@ class Rubko::App
 
 	def production?
 		ENV['RACK_ENV'] == 'production'
+	end
+
+private
+
+	def prepareBody!
+		# if object is a Hash, return JSON
+		if Hash === @body
+			@mime = 'application/json'
+			@body = if production?
+				@body.to_json
+			else
+				JSON.pretty_generate @body, indent: "\t"
+			end
+		end
+
+		# make sure body responds to :each
+		@body = @body.to_s if Integer === @body
+		@body = [@body] if String === @body
+		@body = [] unless @body.respond_to? :each
 	end
 end
