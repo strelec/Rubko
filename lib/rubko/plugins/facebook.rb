@@ -10,10 +10,10 @@ class FacebookPlugin < Rubko::Plugin
 	attr_reader :token
 
 	# PART 1: Initiate login, ask user for permissions
-	def start
+	def start(permissions = [:email])
 		SecureRandom.hex(16).tap { |state|
 			url.redirect build 'https://www.facebook.com/dialog/oauth', query.merge({
-				scope: 'email,publish_stream', state: state
+				scope: permissions * ',', state: state
 			})
 		}
 	end
