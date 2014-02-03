@@ -1,7 +1,6 @@
 require 'rubko/app'
 
 class Rubko
-	VERSION = '0.2'
 
 	def initialize(shared = {})
 		@shared = shared

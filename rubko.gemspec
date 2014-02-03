@@ -1,4 +1,4 @@
-require './lib/rubko'
+require './lib/rubko/version'
 
 Gem::Specification.new do |gem|
 	gem.name        = 'rubko'

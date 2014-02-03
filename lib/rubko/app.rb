@@ -30,20 +30,13 @@ class Rubko::App
 		request( *url.newPath )
 	end
 
-	def request(name = :welcome, action = nil, *path)
+	def request(name = :welcome, *path)
 		@controller = loadController(name) || loadController(:error404)
 
-		calls = [ action ? "_#{action}" : 'index' ]
-		calls << calls.first + '_' + url.method
+		@body = @controller.send(*path)
 
-		calls.map! { |call|
-			if @controller.respond_to? call
-				@body = @controller.__send__ call, *path
-				true
-			end
-		}
-		if calls.compact.empty?
-			@body = @controller.other action, *path
+		unless @body
+			@body = loadController(:error404)
 		end
 
 		# finalize request
