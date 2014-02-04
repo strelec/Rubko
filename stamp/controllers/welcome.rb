@@ -28,7 +28,8 @@ class WelcomeController < Rubko::Controller
 
 
 	# PATCH /20/Mathew
-	update def update_function(id, name='Mathew')
+	# PUT /20/Mathew
+	update def update_function(id, name='Luke')
 		""
 	end
 
