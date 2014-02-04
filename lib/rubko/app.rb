@@ -31,12 +31,13 @@ class Rubko::App
 	end
 
 	def request(name = :welcome, *path)
-		@controller = loadController(name) || loadController(:error404)
-
-		@body = @controller.send(*path)
+		@controller = loadController name
+		if @controller
+			@body = @controller.send(*path)
+		end
 
 		unless @body
-			@body = loadController(:error404)
+			@body = loadController(:error404).send(*path)
 		end
 
 		# finalize request
