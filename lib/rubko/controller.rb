@@ -17,17 +17,16 @@ class Rubko::Controller
 
 		body = nil
 		params.size.downto(0) { |i|
-			if body.nil? && !target[i].nil?
-				target[i].each { |sign|
-					if match = sign.match(params)
-						body = begin
-							sign.call self, match
-						rescue ArgumentError
-							nil
-						end
+			target[i].each { |sign|
+				break if body
+				if match = sign.match(params)
+					body = begin
+						sign.call self, match
+					rescue ArgumentError
+						nil
 					end
-				}
-			end
+				end
+			} unless target[i].nil?
 		}
 		body
 	end
