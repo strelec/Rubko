@@ -1,7 +1,7 @@
 require 'rubko/controller'
 require 'zlib'
 
-class Rubko::Asset < Rubko::Controller
+class Rubko; module Asset
 	class GzipStream
 		def initialize(body, mtime = Time.now)
 			@body = body
@@ -23,4 +23,4 @@ class Rubko::Asset < Rubko::Controller
 			@writer.call data
 		end
 	end
-end
+end; end

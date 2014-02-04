@@ -1,29 +1,52 @@
-require 'rubko/controller'
+require "pathname"
 
-# in case we want to serve files and get notified on hits
-class Rubko::Asset < Rubko::Controller
+class Rubko; module Asset
 
-	def init
-		@dir = 'public'
+	def self.included(obj)
+		obj.instance_variable_set :@root, [:public]
+		obj.class_eval {
+			def self.root(*path)
+				@root = path
+			end
+
+			index def index(*path)
+				# protect private files
+				return if path.include?('..') || path.include?('.private') && production?
+
+				dir = self.class.instance_variable_get :@root
+				path.shift if path.first =~ /\A\d+\z/
+				file = Pathname((dir+path) * '/')
+
+				return unless file.file?
+
+				self.mime = @mime = Rack::Mime.mime_type file.extname
+
+				headers['Cache-Control'] = 'public'
+				headers['Vary'] = 'Accept-Encoding'
+
+				@modified = file.mtime
+				since = (Time.httpdate(env['HTTP_IF_MODIFIED_SINCE']).to_i rescue 0)
+				headers['Last-Modified'] = @modified.httpdate
+				headers['Expires'] = (DateTime.now >> 12).httpdate
+
+				if modified.to_i > since
+					hit( *path )
+					require 'rubko/asset/fileStream'
+					FileStream.new file
+				else
+					cache( *path )
+					self.status = 304
+					''
+				end
+			end
+
+			def hit; end
+			def cache; end
+		}
 	end
-
-	attr_accessor :dir
-
-	def hit(*path)
-		puts "File #{path*'/'} hit." unless production?
-	end
-
-	def cache(*path)
-	end
-
-	def miss(*path)
-		puts "File #{path*'/'} not found (404)."
-		loadController(:error404).other( *path )
-	end
-
-	private :hit, :cache, :miss
 
 	def compressible?
+		return false unless mime
 		super && mime != 'application/octet-stream' &&
 		['application', 'text'].any? { |type|
 			mime.start_with? type+'/'
@@ -32,40 +55,4 @@ class Rubko::Asset < Rubko::Controller
 
 	attr_reader :mime, :modified
 
-	def index
-		other
-	end
-
-	def other(*path)
-		# protect private files
-		if path.include?('..') || path.include?('.private') && production?
-			return miss(*path)
-		end
-
-		path.shift if path[0] =~ /^\d*$/
-		path = "#{dir}/#{path * '/'}"
-		@mime = Rack::Mime.mime_type File.extname(path)
-		if File.file? path
-			self.mime = mime
-			headers['Cache-Control'] = 'public'
-			headers['Vary'] = 'Accept-Encoding'
-
-			@modified = File.mtime path
-			since = (Time.httpdate(env['HTTP_IF_MODIFIED_SINCE']).to_i rescue 0)
-			headers['Last-Modified'] = @modified.httpdate
-			headers['Expires'] = (DateTime.now >> 12).httpdate
-
-			if modified.to_i <= since
-				cache( *path )
-				self.status = 304
-				''
-			else
-				hit( *path )
-				require 'rubko/asset/fileStream'
-				FileStream.new path
-			end
-		else
-			miss( *path )
-		end
-	end
-end
+end; end

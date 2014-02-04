@@ -1,10 +1,7 @@
 require 'rubko/asset'
 
-class FilesController < Rubko::Asset
-
-	def init
-		self.dir = 'public'
-	end
+class FilesController < Rubko::Controller
+	include Rubko::Asset
 
 	def hit(*path)
 		# do nothing special
@@ -14,7 +11,7 @@ class FilesController < Rubko::Asset
 		# do nothing
 	end
 
-	def miss(*path)
-		super
+	index def missing(*path)
+		"File #{path * '/'} doesn't exist."
 	end
 end
