@@ -1,0 +1,7 @@
+#!/usr/bin/bash
+
+gem build rubko.gemspec
+
+echo Build successful. Installing now...
+
+gem install rubko-0.3.gem
