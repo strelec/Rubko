@@ -27,7 +27,7 @@ class Rubko; class Controller; module Macros
 	end
 
 	def update(method)
-		post put Integer, method
+		put patch Integer, method
 	end
 
 	def destroy(method)
