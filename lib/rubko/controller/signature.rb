@@ -32,7 +32,8 @@ class Rubko; class Controller; class Signature
 		size + arity
 	end
 
-	INTEGER = /\A\d+\z/
+	INTEGER = /\A[1-9]\d*\z/
+	FLOAT = /\A\d+(?:\.\d+)?\z/
 
 	def match(req)
 		matches = []
@@ -50,8 +51,16 @@ class Rubko; class Controller; class Signature
 				elsif el == Integer
 					return unless INTEGER =~ req[i]
 					matches << req[i].to_i
+				elsif el == Float
+					return unless FLOAT =~ req[i]
+					matches << req[i].to_f
 				else
-					raise "Unknown mapping parameter: #{el}"
+					begin
+						obj = el.new req[i]
+						matches << obj
+					rescue
+						return
+					end
 				end
 			when String
 				return if el != req[i]
