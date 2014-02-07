@@ -18,7 +18,7 @@ class Rubko::Controller
 		body = nil
 		params.size.downto(0) { |i|
 			target[i].each { |sign|
-				break if body
+				break unless body.nil?
 				if match = sign.match(params)
 					body = begin
 						sign.call self, match
