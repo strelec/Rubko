@@ -2,7 +2,7 @@ class WelcomeController < Rubko::Controller
 
 	# GET /
 	index def x
-		loadView :welcome
+		render :welcome
 	end
 
 	# POST /

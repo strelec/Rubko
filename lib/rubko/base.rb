@@ -74,7 +74,7 @@ class Rubko
 			load :model, name, *args
 		end
 
-		def loadView(*name)
+		def render(*name)
 			if production?
 				template = memory[:views, name]
 			end
@@ -101,13 +101,24 @@ class Rubko
 			end
 		end
 
-		def method_missing(name, *args)
-			if @plugins && @plugins[name]
-				@plugins[name]
-			elsif parent
-				parent.__send__ name, *args
+		def respond_to?(name)
+			super || @plugins.key?(name) ||
+			if parent
+				parent.respond_to?(name)
 			else
-				@plugins[name] = loadPlugin(name) || super
+				@plugins[name] = loadPlugin(name)
+			end
+		end
+
+		def method_missing(name, *args)
+			if respond_to? name
+				if @plugins && @plugins.key?(name)
+					@plugins[name]
+				else
+					parent.__send__ name, *args
+				end
+			else
+				super
 			end
 		end
 
