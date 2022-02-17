@@ -226,7 +226,7 @@ class DbPlugin < Rubko::Plugin
 				escape element
 			}.join(',') + ')'
 		when String
-			if param.encoding.name == 'ASCII-8BIT'
+			if param.encoding == Encoding::BINARY
 				"'" + handle.escape_bytea(param) + "'"
 			else
 				"'" + handle.escape_string(param) + "'"
